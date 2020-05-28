@@ -400,6 +400,19 @@ BRp.findTaxiPoints = function( edge, pairInfo ){
   }
 };
 
+BRp.findCustomPoints = function( edge, pairInfo ){
+  const rs = edge._private.rscratch;
+  const points = edge.pstyle('custom-points').pfValue;
+
+  if (points.length) {
+    rs.edgeType = 'segments';
+    rs.segpts = points;
+  }
+  else {
+    rs.edgeType = 'straight';
+  }
+};
+
 BRp.tryToCorrectInvalidPoints = function( edge, pairInfo ){
   const rs = edge._private.rscratch;
 
@@ -639,7 +652,7 @@ BRp.findEdgeControlPoints = function( edges ){
       continue;
     }
 
-    let edgeIsUnbundled = curveStyle === 'unbundled-bezier' || curveStyle === 'segments' || curveStyle === 'straight' || curveStyle === 'taxi';
+    let edgeIsUnbundled = curveStyle === 'unbundled-bezier' || curveStyle === 'segments' || curveStyle === 'straight' || curveStyle === 'taxi' || curveStyle === 'custom';
     let edgeIsBezier = curveStyle === 'unbundled-bezier' || curveStyle === 'bezier';
     let src = _p.source;
     let tgt = _p.target;
@@ -724,7 +737,7 @@ BRp.findEdgeControlPoints = function( edges ){
       const edge = pairInfo.eles[i];
       const rs = edge[0]._private.rscratch;
       const curveStyle = edge.pstyle( 'curve-style' ).value;
-      const edgeIsUnbundled = curveStyle === 'unbundled-bezier' || curveStyle === 'segments' || curveStyle === 'taxi';
+      const edgeIsUnbundled = curveStyle === 'unbundled-bezier' || curveStyle === 'segments' || curveStyle === 'taxi' || curveStyle === 'custom';
 
       // whether the normalised pair order is the reverse of the edge's src-tgt order
       const edgeIsSwapped = !src.same(edge.source());
@@ -846,6 +859,9 @@ BRp.findEdgeControlPoints = function( edges ){
 
       } else if( curveStyle === 'taxi' ){
         this.findTaxiPoints(edge, passedPairInfo);
+
+      } else if( curveStyle === 'custom' ){
+        this.findCustomPoints(edge, passedPairInfo);
 
       } else if(
         curveStyle === 'straight'
